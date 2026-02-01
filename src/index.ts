@@ -386,9 +386,16 @@ addEntrypoint({
 
 // === ICON ENDPOINT ===
 app.get('/icon.png', async (c) => {
-  // Serve a placeholder icon or redirect to a hosted one
-  const iconUrl = 'https://raw.githubusercontent.com/langoustine69/tennis-intel/main/icon.png';
-  return c.redirect(iconUrl);
+  try {
+    const iconPath = new URL('../icon.png', import.meta.url).pathname;
+    const iconData = await Bun.file(iconPath).arrayBuffer();
+    return new Response(iconData, {
+      headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400' },
+    });
+  } catch {
+    // Fallback to GitHub raw
+    return c.redirect('https://raw.githubusercontent.com/langoustine69/tennis-intel/master/icon.png');
+  }
 });
 
 // === ERC-8004 REGISTRATION FILE ===
